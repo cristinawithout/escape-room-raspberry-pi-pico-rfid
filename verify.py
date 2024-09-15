@@ -2,113 +2,97 @@ from machine import Pin
 from mfrc522 import MFRC522
 import utime
 
-reader = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=1,rst=22)
+def uidToString(uid):
+    return int.from_bytes(bytes(uid),"little",False)
+    
+
+class Readers:
+    
+    def __init__(self):
+        self.reader = []
+        self.readerId = []
+        self.previousCard = []
+        self.cardId = []
+        self.good = []
+
+   
+    def add(self, reader, readerID="", cardId=""):
+        self.reader.append(reader)
+        if len(readerID)==0:
+            readerID= "RFID #"+str(len(self.reader))
+        self.readerId.append(readerID)
+        self.previousCard.append([0])
+        self.cardId.append(cardId)
+        self.good.append(False)
+    
+    def checkReader(self,idx=0):
+        if len(self.reader)> idx:
+            self.reader[idx].init()
+            (stat, tag_type) = self.reader[idx].request(self.reader[idx].REQIDL)
+            if stat == self.reader[idx].OK:
+                (stat, uidRaw) = self.reader[idx].SelectTagSN()
+                uid = uidToString(uidRaw)
+                if stat == self.reader[idx].OK:
+                    return (self.readerId[idx] , uid, uid == self.cardId[idx])
+               # if uid != self.previousCard[idx]:
+               #     if stat == self.reader[idx].OK:
+               #         self.previousCard[idx] = uid
+               #         return (self.readerId[idx] , uid, uid == self.cardId[idx])
+            else:
+                self.previousCard[idx] = [0]
+        return (-1, [0], False)
+    
+    
+    def checkAnyReader(self):
+        for idx in range(len(self.reader)):
+            (readerID, uid, match) = self.checkReader(idx)
+            print(idx, " match: ", match, ", card id: ", uid)
+            self.good[idx] = match
+
+        print(self.good)
+        if any(x == 0 for x in self.good):
+            return False
+        else:
+            return True
+    
+    
+# define readers
+
+readers = Readers()
+
+# CS1 = Pin 2
+reader1 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=1,rst=22)
+# CS5 = Pin 7
 reader2 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=5,rst=22)
+# CS9 = Pin 12
 reader3 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=9,rst=22)
+# CS17 = Pin 22
 reader4 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=17,rst=22)
+# CS13 = Pin 17
 reader5 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=13,rst=22)
+
+
+readers.add(reader1,"READER1", 2816952116)
+readers.add(reader2,"READER2", 2814051636)
+readers.add(reader3,"READER3", 2098114185)
+readers.add(reader4,"READER4", 14561854)
+readers.add(reader5,"READER5", 2804865828)
 
 lock = Pin(0, Pin.OUT)
 
- 
-print("Bring RFID TAG Closer...")
 print("")
- 
-reader.init()
-reader2.init()
-reader3.init()
-reader4.init()
-reader5.init()
+print("Please place card on any reader")
+print("")
 
-lock.value(1)
-good = [0,0,0,0,0]
+try:
+    while True:
+        allGood = readers.checkAnyReader()
+        print(allGood)
+        if(allGood):
+            lock.value(0)
+        else:
+            lock.value(1)
+               
 
-while True:
-    print("START")
-    #reader.init()
-    (stat, tag_type) = reader.request(reader.REQIDL)
-    if stat == reader.OK:
-        (stat, uid) = reader.SelectTagSN()
-        if stat == reader.OK:
-            card = int.from_bytes(bytes(uid),"little",False)  
-            if card == 2816952116:
-                #print("READER 1 GOOD")
-                good[0] = 1
-            else:
-                #print("READER 1 BAD")
-                good[0] = 0
-    else:
-        good[0] = 0
-                
-    #reader2.init()
-    good[1] = 1 #temp -reader is broken
-    (stat2, tag_type2) = reader2.request(reader2.REQIDL)
-    if stat2 == reader2.OK:
-        (stat2, uid2) = reader2.SelectTagSN()
-        if stat2 == reader2.OK:
-            card2 = int.from_bytes(bytes(uid2),"little",False)
-            if card2 == 2814051636:
-                #print("READER 2 GOOD")
-                good[1] = 1
-            else:
-                #print ("READER 2 BAD")
-                good[1] = 0
-    #else:
-     #   good[1] = 0
-        
-                 
-    #reader3.init()
-    (stat3, tag_type3) = reader3.request(reader3.REQIDL)
-    if stat3 == reader3.OK:
-        (stat3, uid3) = reader3.SelectTagSN()
-        if stat3 == reader3.OK:
-            card3 = int.from_bytes(bytes(uid3),"little",False)
-            if card3 == 2098114185:
-                #print("READER 3 GOOD")
-                good[2] = 1
-            else:
-                #print ("READER 3 BAD")
-                good[2] = 0
-    else:
-        good[2] = 0
-                
-    #reader4.init()
-    (stat4, tag_type4) = reader4.request(reader4.REQIDL)
-    if stat4 == reader4.OK:
-        (stat4, uid4) = reader4.SelectTagSN()
-        if stat4 == reader4.OK:
-            card4 = int.from_bytes(bytes(uid4),"little",False)
-            if card4 == 14561854:
-                #print("READER 4 GOOD")
-                good[3] = 1
-            else:
-                #print ("READER 4 BAD")
-                good[3] = 0
-    else:
-        good[3] = 0
-                
-    #reader5.init()
-    (stat5, tag_type5) = reader5.request(reader5.REQIDL)
-    if stat5 == reader5.OK:
-        (stat5, uid5) = reader5.SelectTagSN()
-        if stat5 == reader5.OK:
-            card5 = int.from_bytes(bytes(uid5),"little",False)
-            if card5 == 2804865828:
-                #print("READER 5 GOOD")
-                good[4] = 1
-            else:
-                #print ("READER 5 BAD")
-                good[4] = 0
-    else:
-        good[4] = 0
-                
-    print(good)
-    
-    if any(x == 0 for x in good):
-        print("BAD")
-        lock.value(1)
-    else:
-        print("GOOD")
-        lock.value(0)
-
-    utime.sleep_ms(500) 
+except KeyboardInterrupt:
+    pass
