@@ -62,14 +62,14 @@ readers = Readers()
 
 # CS1 = Pin 2
 reader1 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=1,rst=22)
-# CS5 = Pin 7
-reader2 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=5,rst=22)
-# CS9 = Pin 12
-reader3 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=9,rst=22)
-# CS17 = Pin 22
-reader4 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=17,rst=22)
 # CS13 = Pin 17
-reader5 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=13,rst=22)
+reader2 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=13,rst=22)
+# CS5 = Pin 7
+reader3 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=5,rst=22)
+# CS9 = Pin 12
+reader4 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=9,rst=22)
+# CS17 = Pin 22
+reader5 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=17,rst=22)
 
 
 readers.add(reader1,"READER1", 2816952116)
