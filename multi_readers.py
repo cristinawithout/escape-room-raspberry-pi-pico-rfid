@@ -1,3 +1,4 @@
+# Outputs the IDS for the RFID card on each reader. (Use to get the IDs to use in verify.py)
 from mfrc522 import MFRC522
 import utime
 
@@ -5,10 +6,7 @@ import utime
 # youtube short video about it https://www.youtube.com/watch?v=wE2AamTF5dg
 
 def uidToString(uid):
-    mystring = ""
-    for i in uid:
-        mystring = "%02X" % i + mystring
-    return mystring
+    return int.from_bytes(bytes(uid),"little",False)
     
 
 class Readers:
@@ -55,14 +53,14 @@ readers = Readers()
 
               
 reader1 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=1,rst=22)
-#reader2 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=5,rst=22)
+reader2 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=5,rst=22)
 reader3 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=9,rst=22)
 reader4 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=17,rst=22)
 reader5 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=13,rst=22)
 
 
 readers.add(reader1,"READER1")
-#readers.add(reader2,"READER2")
+readers.add(reader2,"READER2")
 readers.add(reader3,"READER3")
 readers.add(reader4,"READER4")
 readers.add(reader5,"READER5")
