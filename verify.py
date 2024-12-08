@@ -46,7 +46,7 @@ class Readers:
     def checkAnyReader(self):
         for idx in range(len(self.reader)):
             (readerID, uid, match) = self.checkReader(idx)
-            print(idx + 1, " match: ", match, ", card id: ", uid)
+            print(readerID, " match: ", match, ", card id: ", uid)
             self.good[idx] = match
 
         print(self.good)
