@@ -80,9 +80,13 @@ readers.add(reader5,"READER5", 2804865828)
 
 lock = Pin(0, Pin.OUT)
 
+lock.value(1); # init to closed -- magnetized
+
 print("")
 print("Please place card on any reader")
 print("")
+
+
 
 try:
     while True:
