@@ -71,7 +71,7 @@ reader4 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=9,rst=22)
 # CS17 = Pin 22
 reader5 = MFRC522(spi_id=0,sck=6,miso=4,mosi=7,cs=17,rst=22)
 
-
+# Use the values from multi_readers here as the 3rd param
 readers.add(reader1,"READER1", 2816952116)
 readers.add(reader2,"READER2", 2814051636)
 readers.add(reader3,"READER3", 2098114185)
