@@ -14,7 +14,19 @@ class Readers:
         self.previousCard = []
         self.cardId = []
         self.good = []
-
+        self.reset = 0
+        self.override = 0
+        self.lock = 0
+        self.isLocked = 1
+        
+    def setLock(self, lock, isLocked = 1):
+        self.lock = lock
+        self.lock.value(isLocked)
+        self.isLocked = isLocked
+        
+    def setControlKeys(self, resetId = 0, overrideId = 0):
+        self.reset = resetId # Set a key that resets to locked
+        self.override = overrideId # Set a key that opens the lock
    
     def add(self, reader, readerID="", cardId=""):
         self.reader.append(reader)
@@ -33,11 +45,19 @@ class Readers:
                 (stat, uidRaw) = self.reader[idx].SelectTagSN()
                 uid = uidToString(uidRaw)
                 if stat == self.reader[idx].OK:
-                    return (self.readerId[idx] , uid, uid == self.cardId[idx])
-               # if uid != self.previousCard[idx]:
-               #     if stat == self.reader[idx].OK:
-               #         self.previousCard[idx] = uid
-               #         return (self.readerId[idx] , uid, uid == self.cardId[idx])
+                    if (self.reset == uid):
+                        self.lock.value(1)
+                        self.isLocked = 1
+                        print("RESET - LOCKED")
+                    if (self.override == uid):
+                        self.lock.value(0)
+                        self.isLocked = 0
+                        print("OVERRIDE - UNLOCKED")
+                    return (self.readerId[idx], uid, uid == self.cardId[idx])
+                if uid != self.previousCard[idx]:
+                    if stat == self.reader[idx].OK:
+                        self.previousCard[idx] = uid
+                        return (self.readerId[idx] , uid, uid == self.cardId[idx])
             else:
                 self.previousCard[idx] = [0]
         return (-1, [0], False)
@@ -46,14 +66,18 @@ class Readers:
     def checkAnyReader(self):
         for idx in range(len(self.reader)):
             (readerID, uid, match) = self.checkReader(idx)
-            print(readerID, " match: ", match, ", card id: ", uid)
+            #print(readerID, " match: ", match, ", card id: ", uid)
             self.good[idx] = match
 
-        print(self.good)
+        if (self.isLocked == 0):
+            return
+        
         if any(x == 0 for x in self.good):
-            return False
+            print(self.good)
         else:
-            return True
+            print("GOOD")
+            self.isLocked = 0
+            lock.value(0)
     
     
 # define readers
@@ -80,22 +104,18 @@ readers.add(reader5,"READER5", 2804865828)
 
 lock = Pin(0, Pin.OUT)
 
-lock.value(1); # init to closed -- magnetized
+readers.setLock(lock)
+readers.setControlKeys(526962319, 528401087)
+
 
 print("")
 print("Please place card on any reader")
 print("")
 
-
-
 try:
     while True:
-        allGood = readers.checkAnyReader()
-        print(allGood)
-        if(allGood):
-            lock.value(0)
-        else:
-            lock.value(1)
+        readers.checkAnyReader()
+        utime.sleep_ms(50)
                
 
 except KeyboardInterrupt:
